@@ -1,0 +1,171 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", Arial, sans-serif;
+  background: #0b1220;
+  color: #e5e7eb;
+}
+
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+h1 {
+  font-size: 22px;
+  margin: 0 0 4px 0;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #34d399;
+  margin-bottom: 16px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #34d399;
+  display: inline-block;
+}
+
+.dot.stale {
+  background: #f59e0b;
+}
+
+.dot.error {
+  background: #ef4444;
+}
+
+.memo-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.legend {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 12px;
+}
+
+.legend span {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.legend .ok {
+  background: #14532d;
+  color: #86efac;
+}
+
+.legend .mid {
+  background: #713f12;
+  color: #fde68a;
+}
+
+.legend .zero {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+.month-block {
+  margin-bottom: 32px;
+  border: 1px solid #1f2a44;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.month-title {
+  background: #2c3e6b;
+  color: #fff;
+  padding: 8px 14px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+}
+
+th, td {
+  border: 1px solid #1f2a44;
+  padding: 4px 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+thead th {
+  background: #182238;
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
+.item-cell {
+  text-align: left;
+  font-weight: 700;
+  color: #fff;
+  min-width: 130px;
+}
+
+.item-navy { background: #334155; }
+.item-green { background: #14532d; }
+.item-red { background: #7f1d1d; }
+
+.total-cell {
+  background: #101a30;
+  font-weight: 700;
+}
+
+input.num-input {
+  width: 52px;
+  background: #0f1729;
+  border: 1px solid #29334d;
+  color: #e5e7eb;
+  border-radius: 4px;
+  padding: 2px 4px;
+  text-align: center;
+  font-size: 12px;
+}
+
+input.num-input:focus {
+  outline: 1px solid #60a5fa;
+}
+
+.rate-badge {
+  display: inline-block;
+  min-width: 40px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.rate-ok { background: #c6efce; color: #006100; }
+.rate-mid { background: #ffeb9c; color: #9c6500; }
+.rate-zero { background: #ffc7ce; color: #9c0006; }
+.rate-na { color: #6b7280; }
+
+.footer-note {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #6b7280;
+}

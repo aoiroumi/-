@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from "react";
+import { VIEWS, DEFAULT_VIEW_ID } from "../lib/config";
 
 const POLL_INTERVAL_MS = 8000; // Google Sheets APIの無料枠内に収まる間隔（ポーリング方式のため厳密なリアルタイムではありません）
 
@@ -26,15 +27,16 @@ function RateBadge({ rate }) {
 }
 
 export default function Home() {
+  const [viewId, setViewId] = useState(DEFAULT_VIEW_ID);
   const [data, setData] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | live | stale | error
   const [errorMsg, setErrorMsg] = useState("");
   const savingRef = useRef(new Set());
 
-  async function fetchData(showLoading = false) {
+  async function fetchData(showLoading = false, forViewId = viewId) {
     if (showLoading) setStatus("loading");
     try {
-      const res = await fetch("/api/progress");
+      const res = await fetch(`/api/progress?view=${encodeURIComponent(forViewId)}`);
       if (!res.ok) throw new Error((await res.json()).error || "取得に失敗しました");
       const json = await res.json();
       setData(json);
@@ -47,10 +49,11 @@ export default function Home() {
   }
 
   useEffect(() => {
-    fetchData(true);
-    const id = setInterval(() => fetchData(false), POLL_INTERVAL_MS);
+    fetchData(true, viewId);
+    const id = setInterval(() => fetchData(false, viewId), POLL_INTERVAL_MS);
     return () => clearInterval(id);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewId]);
 
   async function saveCell(monthIndex, itemIndex, week, field, value) {
     const key = `${monthIndex}-${itemIndex}-${week}-${field}`;
@@ -59,10 +62,10 @@ export default function Home() {
       const res = await fetch("/api/progress", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ monthIndex, itemIndex, week, field, value }),
+        body: JSON.stringify({ monthIndex, itemIndex, week, field, value, view: viewId }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "保存に失敗しました");
-      await fetchData(false);
+      await fetchData(false, viewId);
     } catch (e) {
       setStatus("error");
       setErrorMsg(e.message);
@@ -82,14 +85,36 @@ export default function Home() {
     });
   }
 
+  const currentViewLabel = VIEWS.find((v) => v.id === viewId)?.label || "";
+
   return (
     <div className="page">
-      <h1>営業チーム 案件進捗管理表</h1>
+      <div className="header-row">
+        <h1>営業チーム 案件進捗管理表</h1>
+        <div className="view-switcher">
+          <label htmlFor="view-select">表示切り替え:</label>
+          <select
+            id="view-select"
+            value={viewId}
+            onChange={(e) => {
+              setData(null);
+              setViewId(e.target.value);
+            }}
+          >
+            {VIEWS.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="status-row">
         <span
           className={`dot ${status === "live" ? "" : status === "error" ? "error" : "stale"}`}
         />
-        {status === "live" && "チームで共有中（数秒ごとに自動更新）"}
+        {status === "live" && `${currentViewLabel}を表示中（数秒ごとに自動更新）`}
         {status === "loading" && "読み込み中…"}
         {status === "error" && `エラー: ${errorMsg}`}
       </div>
@@ -209,7 +234,7 @@ export default function Home() {
 
       <p className="footer-note">
         「目標」「進捗」欄を編集するとGoogleスプレッドシートに自動保存されます（フォーカスを外したタイミングで保存）。
-        達成率・月計はスプレッドシート側の数式で自動計算された値を表示しています。
+        達成率・月計はスプレッドシート側の数式で自動計算された値を表示しています。上部のドロップダウンで、チーム全体とメンバー個人の表示を切り替えられます。
       </p>
     </div>
   );

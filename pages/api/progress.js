@@ -1,5 +1,13 @@
 import { readRange, writeCell } from "../../lib/sheets";
-import { ITEMS, MONTHS, SHEET_TAB_NAME, resolveMonthLayout, colLetterOf, fullRangeA1 } from "../../lib/config";
+import {
+  ITEMS,
+  MONTHS,
+  resolveMonthLayout,
+  colLetterOf,
+  fullRangeA1,
+  resolveView,
+  VIEWS,
+} from "../../lib/config";
 
 function cellValue(rows, row, col) {
   // rows は A1 起点の2次元配列。row/col は1始まりのシート座標。
@@ -9,8 +17,11 @@ function cellValue(rows, row, col) {
   return v === undefined ? null : v;
 }
 
-async function handleGet(res) {
-  const rows = await readRange(fullRangeA1());
+async function handleGet(req, res) {
+  const viewId = typeof req.query.view === "string" ? req.query.view : undefined;
+  const view = resolveView(viewId);
+
+  const rows = await readRange(fullRangeA1(view.sheetTab));
 
   const months = MONTHS.map((m) => {
     const layout = resolveMonthLayout(m);
@@ -36,11 +47,16 @@ async function handleGet(res) {
     return { label: layout.label, items };
   });
 
-  res.status(200).json({ months, updatedAt: new Date().toISOString() });
+  res.status(200).json({
+    months,
+    updatedAt: new Date().toISOString(),
+    view: view.id,
+    views: VIEWS.map((v) => ({ id: v.id, label: v.label })),
+  });
 }
 
 async function handlePatch(req, res) {
-  const { monthIndex, itemIndex, week, field, value } = req.body || {};
+  const { monthIndex, itemIndex, week, field, value, view: viewId } = req.body || {};
 
   if (
     typeof monthIndex !== "number" ||
@@ -53,6 +69,8 @@ async function handlePatch(req, res) {
     res.status(400).json({ error: "リクエストの形式が不正です" });
     return;
   }
+
+  const view = resolveView(viewId);
 
   const month = MONTHS[monthIndex];
   if (!month || itemIndex < 0 || itemIndex >= ITEMS.length) {
@@ -69,7 +87,7 @@ async function handlePatch(req, res) {
 
   const dataRow = layout.dataFirstRow + itemIndex;
   const col = field === "goal" ? weekLayout.goalCol : weekLayout.progCol;
-  const a1 = `${SHEET_TAB_NAME}!${colLetterOf(col)}${dataRow}`;
+  const a1 = `${view.sheetTab}!${colLetterOf(col)}${dataRow}`;
 
   await writeCell(a1, value);
   res.status(200).json({ ok: true });
@@ -78,7 +96,7 @@ async function handlePatch(req, res) {
 export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
-      await handleGet(res);
+      await handleGet(req, res);
     } else if (req.method === "PATCH") {
       await handlePatch(req, res);
     } else {

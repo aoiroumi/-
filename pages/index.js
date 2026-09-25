@@ -4,12 +4,12 @@ import { VIEWS, DEFAULT_VIEW_ID } from "../lib/config";
 const POLL_INTERVAL_MS = 8000; // Google Sheets APIの無料枠内に収まる間隔（ポーリング方式のため厳密なリアルタイムではありません）
 
 const ITEM_STYLE = {
-  "要員⇔案件提案": "item-navy",
-  "社内面談": "item-navy",
+  "所属へ提案した数": "item-navy",
+  "カジュアル面談": "item-navy",
   "BP確保": "item-navy",
-  "顧客提案": "item-green",
+  "エントリーした数": "item-green",
   "顧客面談": "item-green",
-  "受注": "item-red",
+  "オファー": "item-red",
   "受注額（万円）": "item-red",
 };
 
